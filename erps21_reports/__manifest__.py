@@ -8,7 +8,6 @@
     'depends': ['stock',],
     'data': [
         'reports/paper_format.xml',
-        'reports/report_invoice.xml',
         'reports/report_picking.xml',
     ],
     'installable': True,
