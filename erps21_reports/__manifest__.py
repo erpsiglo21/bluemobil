@@ -5,7 +5,7 @@
     'license': 'AGPL-3',
     'summary': 'Reporteria de ERP Siglo 21',
     'author': u'ERP Siglo 21',
-    'depends': ['sale_management','l10n_cl_edi',],
+    'depends': ['stock',],
     'data': [
         'reports/paper_format.xml',
         'reports/report_invoice.xml',
