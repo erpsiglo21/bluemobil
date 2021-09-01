@@ -1,0 +1,102 @@
+<?xml version="1.0"?>
+<odoo>
+    <template id="erps21_picking_report">
+        <t t-call="web.html_container">
+            <div class="page">
+                <table t-attf-class="table" t-attf-style="width: 100%" name="stock_move_table">
+                    <td t-attf-class="col-sm-4"><spawn t-esc="res_company.name.strip()"/></td>
+                    <td t-attf-class="col-sm-4"><h2>Picking</h2></td>
+                    <td t-attf-class="col-sm-4" t-attf-style="text-align: right"><span t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M')"/></td>
+                </table>
+                <div class="row mt32 mb32">
+                    <div class="col-auto" name="div_origin">
+                        <strong>Ordenes:</strong>
+                        <p t-esc="','.join(docs.mapped('origin'))"/>
+                    </div>
+                </div>
+                <div class="row">
+                    <table class="table" style="width: 100%" name="stock_move_table">
+                        <thead>
+                            <tr>
+                                <th name="th_sm_product" class="col-1" style="border-bottom: 2px solid black">Sku</th>
+                                <th name="th_sm_name" class="col-3" style="border-bottom: 2px solid black">Descripcion</th>
+                                <th name="th_sm_Origin" class="col-3" style="border-bottom: 2px solid black">Ubicacion</th>
+                                <th name="th_sm_Lot" class="col-3" style="border-bottom: 2px solid black">Lote/serie</th>
+                                <th name="th_sm_quantity" class="col-1" style="border-bottom: 2px solid black">Cantidad</th>
+                                <th name="th_sm_uom" class="col-1" style="border-bottom: 2px solid black">UM</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-set="lines" t-value="docs.mapped('move_line_ids').sorted(key=lambda m: (m.location_id.id, m.product_id.id, m.lot_id.id))"/>
+                            <t t-set="qty" t-value="0"/>
+                            <t t-set="lastone" t-value="lines[0]"/>
+                            <t t-foreach="range(0,len(lines))" t-as="i">
+                                <t t-set="line" t-value="lines[i]"/>
+                                <t t-if="line.lot_id != lastone.lot_id or line.product_id != lastone.product_id or line.location_id != lastone.location_id">
+                                    <t t-if="qty != 0">
+                                        <tr>
+                                            <td style="text-align: right">
+                                                <span t-esc="lastone.product_id.default_code"/>
+                                            </td>
+                                            <td>
+                                                <span t-esc="lastone.product_id.name"/>
+                                            </td>
+                                            <td>
+                                                <span t-esc="lastone.location_id.display_name"/>
+                                            </td>
+                                            <td>
+                                                <span t-esc="lastone.lot_id.name"/>
+                                            </td>
+                                            <td style="text-align: right">
+                                                <span t-esc="qty"/>
+                                            </td>
+                                            <td style="text-align: center">
+                                                <span t-esc="lastone.product_uom_id.name"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                    <t t-set="qty" t-value="0"/>
+                                    <t t-set="lastone" t-value="line"/>
+                                </t>
+                                <t t-set="qty" t-value="qty + line.qty_done"/>
+                            </t>
+                            <t t-if="qty != 0">
+                                <tr>
+                                    <td style="text-align: right">
+                                        <span t-esc="lastone.product_id.default_code"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="lastone.product_id.name"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="lastone.location_id.display_name"/>
+                                    </td>
+                                    <td>
+                                        <span t-esc="lastone.lot_id.name"/>
+                                    </td>
+                                    <td style="text-align: right">
+                                        <span t-esc="qty"/>
+                                    </td>
+                                    <td style="text-align: center">
+                                        <span t-esc="lastone.product_uom_id.name"/>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </t>
+    </template>
+    <record id="action_picking_report" model="ir.actions.report">
+        <field name="name">Generar picking</field>
+        <field name="model">stock.picking</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="paperformat_id" ref="paperformat_euro_landscape"/>
+        <field name="report_name">erps21_reports.erps21_picking_report</field>
+        <field name="report_file">erps21_reports.erps21_picking_report</field>
+        <field name="print_report_name">'reporte_picking'</field>
+        <field name="binding_model_id" ref="stock.model_stock_picking"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>
